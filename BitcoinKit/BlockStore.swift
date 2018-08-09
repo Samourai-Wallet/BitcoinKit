@@ -41,7 +41,7 @@ public class SQLiteBlockStore : BlockStore {
     let network: Network
 
     private var database: OpaquePointer?
-    private var statements = [String: OpaquePointer!]()
+    private var statements = [String: OpaquePointer?]()
 
     public init(file: URL, network: Network = .testnet) throws {
         self.network = network
@@ -247,7 +247,9 @@ public class SQLiteBlockStore : BlockStore {
     }
 
     public func addBlock(_ block: BlockMessage, hash: Data) throws {
-        let stmt = statements["addBlock"]
+        guard let stmt = statements["addBlock"] else {
+            throw SQLiteError.error(0)
+        }
 
         try execute { hash.withUnsafeBytes { sqlite3_bind_blob(stmt, 1, $0, Int32(hash.count), SQLITE_TRANSIENT) } }
         try execute { sqlite3_bind_int64(stmt, 2, sqlite3_int64(bitPattern: UInt64(truncatingIfNeeded: block.version))) }
@@ -263,7 +265,9 @@ public class SQLiteBlockStore : BlockStore {
     }
 
     public func addMerkleBlock(_ merkleBlock: MerkleBlockMessage, hash: Data) throws {
-        let stmt = statements["addMerkleBlock"]
+        guard let stmt = statements["addMerkleBlock"] else {
+            throw SQLiteError.error(0)
+        }
 
         try execute { hash.withUnsafeBytes { sqlite3_bind_blob(stmt, 1, $0, Int32(hash.count), SQLITE_TRANSIENT) } }
         try execute { sqlite3_bind_int64(stmt, 2, sqlite3_int64(bitPattern: UInt64(truncatingIfNeeded: merkleBlock.version))) }
@@ -285,7 +289,9 @@ public class SQLiteBlockStore : BlockStore {
     }
 
     public func addTransaction(_ transaction: Transaction, hash: Data) throws {
-        let stmt = statements["addTransaction"]
+        guard let stmt = statements["addTransaction"] else {
+            throw SQLiteError.error(0)
+        }
 
         try execute { hash.withUnsafeBytes { sqlite3_bind_blob(stmt, 1, $0, Int32(hash.count), SQLITE_TRANSIENT) } }
         try execute { sqlite3_bind_int64(stmt, 2, sqlite3_int64(bitPattern: UInt64(truncatingIfNeeded: transaction.version))) }
@@ -308,7 +314,9 @@ public class SQLiteBlockStore : BlockStore {
     }
 
     public func addTransactionInput(_ input: TransactionInput, txId: Data) throws {
-        let stmt = statements["addTransactionInput"]
+        guard let stmt = statements["addTransactionInput"] else {
+            throw SQLiteError.error(0)
+        }
 
         try execute { sqlite3_bind_int64(stmt, 1, sqlite3_int64(bitPattern: input.scriptLength.underlyingValue)) }
         try execute { input.signatureScript.withUnsafeBytes { sqlite3_bind_blob(stmt, 2, $0, Int32(input.signatureScript.count), SQLITE_TRANSIENT) } }
@@ -321,7 +329,9 @@ public class SQLiteBlockStore : BlockStore {
     }
 
     public func addTransactionOutput(_ output: TransactionOutput, txId: Data) throws {
-        let stmt = statements["addTransactionOutput"]
+        guard let stmt = statements["addTransactionOutput"] else {
+            throw SQLiteError.error(0)
+        }
 
         try execute { sqlite3_bind_int64(stmt, 1, sqlite3_int64(bitPattern: UInt64(truncatingIfNeeded: output.value))) }
         try execute { sqlite3_bind_int64(stmt, 2, sqlite3_int64(bitPattern: output.scriptLength.underlyingValue)) }
@@ -338,21 +348,27 @@ public class SQLiteBlockStore : BlockStore {
     }
 
     private func deleteTransactionInput(txId: Data) throws {
-        let stmt = statements["deleteTransactionInput"]
+        guard let stmt = statements["deleteTransactionInput"] else {
+            throw SQLiteError.error(0)
+        }
         try execute { txId.withUnsafeBytes { sqlite3_bind_blob(stmt, 1, $0, Int32(txId.count), SQLITE_TRANSIENT) } }
         try executeUpdate { sqlite3_step(stmt) }
         try execute { sqlite3_reset(stmt) }
     }
 
     private func deleteTransactionOutput(txId: Data) throws {
-        let stmt = statements["deleteTransactionOutput"]
+        guard let stmt = statements["deleteTransactionOutput"] else {
+            throw SQLiteError.error(0)
+        }
         try execute { txId.withUnsafeBytes { sqlite3_bind_blob(stmt, 1, $0, Int32(txId.count), SQLITE_TRANSIENT) } }
         try executeUpdate { sqlite3_step(stmt) }
         try execute { sqlite3_reset(stmt) }
     }
 
     public func calculateBlance(address: Address) throws -> Int64 {
-        let stmt = statements["calculateBlance"]
+        guard let stmt = statements["calculateBlance"]  else {
+            throw SQLiteError.error(0)
+        }
         try execute { sqlite3_bind_text(stmt, 1, address.base58, -1, SQLITE_TRANSIENT) }
 
         var balance: Int64 = 0
@@ -367,7 +383,9 @@ public class SQLiteBlockStore : BlockStore {
     }
 
     public func transactions(address: Address) throws -> [Payment] {
-        let stmt = statements["transactions"]
+        guard let stmt = statements["transactions"] else {
+            throw SQLiteError.error(0)
+        }
         try execute { sqlite3_bind_text(stmt, 1, address.base58, -1, SQLITE_TRANSIENT) }
 
         var payments = [Payment]()
@@ -385,7 +403,9 @@ public class SQLiteBlockStore : BlockStore {
     }
 
     public func latestBlockHash() throws -> Data? {
-        let stmt = statements["latestBlockHash"]
+        guard let stmt = statements["latestBlockHash"] else {
+            throw SQLiteError.error(0)
+        }
 
         var hash: UnsafeRawPointer?
         if sqlite3_step(stmt) == SQLITE_ROW {

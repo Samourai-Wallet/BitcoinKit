@@ -76,8 +76,8 @@ public class Peer : NSObject, StreamDelegate {
         inputStream.delegate = self
         outputStream.delegate = self
 
-        inputStream.schedule(in: .current, forMode: .commonModes)
-        outputStream.schedule(in: .current, forMode: .commonModes)
+        inputStream.schedule(in: .current, forMode: RunLoop.Mode.common)
+        outputStream.schedule(in: .current, forMode: RunLoop.Mode.common)
 
         inputStream.open()
         outputStream.open()
@@ -90,8 +90,8 @@ public class Peer : NSObject, StreamDelegate {
 
         inputStream.delegate = nil
         outputStream.delegate = nil
-        inputStream.remove(from: .current, forMode: .commonModes)
-        outputStream.remove(from: .current, forMode: .commonModes)
+        inputStream.remove(from: .current, forMode: RunLoop.Mode.common)
+        outputStream.remove(from: .current, forMode: RunLoop.Mode.common)
         inputStream.close()
         outputStream.close()
         readStream = nil
@@ -166,7 +166,7 @@ public class Peer : NSObject, StreamDelegate {
 
     private func readAvailableBytes(stream: InputStream) {
         let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: bufferSize)
-        defer { buffer.deallocate(capacity: bufferSize) }
+        defer { buffer.deallocate() }
         while stream.hasBytesAvailable {
             let numberOfBytesRead = stream.read(buffer, maxLength: bufferSize)
             if numberOfBytesRead <= 0 {
