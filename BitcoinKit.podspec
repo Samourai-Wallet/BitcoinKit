@@ -17,7 +17,7 @@ Pod::Spec.new do |spec|
   spec.private_header_files = 'BitcoinKit/**/BitcoinKitInternal.h'
   spec.module_map = 'BitcoinKit/BitcoinKit.modulemap'
   spec.ios.deployment_target = '8.0'
-  spec.swift_version = '4.0'
+  spec.swift_version = '4.2'
 
   spec.pod_target_xcconfig = { 'SWIFT_WHOLE_MODULE_OPTIMIZATION' => 'YES',
                                'APPLICATION_EXTENSION_API_ONLY' => 'YES',
