@@ -103,6 +103,15 @@ public final class HDWallet {
     public func publicKey(index: UInt32) throws -> HDPublicKey {
         return try privateKey(index: index).publicKey()
     }
+    
+    public func accountPrivateKey() throws -> HDPrivateKey {
+        let privateKey = try keychain.derivedKey(path: "m/\(purpose)'/\(coinType)'/\(account)'/")
+        return privateKey
+    }
+    
+    public func accountPublicKey() throws -> HDPublicKey {
+        return try accountPrivateKey().publicKey()
+    }
 
     enum Chain : Int {
         case external
