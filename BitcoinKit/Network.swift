@@ -20,6 +20,7 @@ public class Network {
     var xpubkey: UInt32 { return 0 }
     var xprivkey: UInt32 { return 0 }
     var magic: UInt32 { return 0 }
+    public var bech32: String { return "" }
     public var port: UInt32 { return 0 }
     public var dnsSeeds: [String] { return [] }
     var checkpoints: [Checkpoint] { return [] }
@@ -61,6 +62,9 @@ public class Mainnet: Network {
     }
     public override var port: UInt32 {
         return 8333
+    }
+    public override var bech32: String {
+        return "bc"
     }
     public override var dnsSeeds: [String] {
         return [
@@ -140,6 +144,9 @@ public class Testnet: Network {
     }
     public override var port: UInt32 {
         return 18333
+    }
+    public override var bech32: String {
+        return "tb"
     }
     public override var dnsSeeds: [String] {
         return [

@@ -26,7 +26,13 @@ public final class HDWallet {
     private let seed: Data
     private let keychain: HDKeychain
 
-    private let purpose: UInt32
+    public enum BIP: UInt32 {
+        case fortyFour = 44
+        case fortyNine = 49
+        case eightyFour = 84
+    }
+    
+    var purpose: UInt32
     private let coinType: UInt32
     var account: UInt32
     var externalIndex: UInt32
@@ -42,7 +48,7 @@ public final class HDWallet {
         // Purpose is a constant set to 44' (or 0x8000002C) following the BIP43 recommendation.
         // It indicates that the subtree of this node is used according to this specification.
         // Hardened derivation is used at this level.
-        purpose = 44
+        purpose = 49
 
         // One master node (seed) can be used for unlimited number of independent cryptocoins such as Bitcoin, Litecoin or Namecoin. However, sharing the same space for various cryptocoins has some disadvantages.
         // This level creates a separate subtree for every cryptocoin, avoiding reusing addresses across cryptocoins and improving privacy issues.
@@ -70,47 +76,50 @@ public final class HDWallet {
         internalIndex = 0
     }
 
-    public func receiveAddress() throws -> Address {
-        return Address(try publicKey())
+    public func receiveAddress(bip: BIP) throws -> Address {
+        return Address(try publicKey(bip: bip))
     }
 
-    public func receiveAddress(index: UInt32) throws -> Address {
-        return Address(try publicKey(index: index))
+    public func receiveAddress(bip: BIP, index: UInt32) throws -> Address {
+        return Address(try publicKey(bip: bip, index: index))
     }
 
-    public func changeAddress() throws -> Address {
-        return try changeAddress(index: internalIndex)
+    public func changeAddress(bip: BIP) throws -> Address {
+        return try changeAddress(bip: bip, index: internalIndex)
     }
 
-    public func changeAddress(index: UInt32) throws -> Address {
+    public func changeAddress(bip: BIP, index: UInt32) throws -> Address {
+        purpose = bip.rawValue
         let privateKey = try keychain.derivedKey(path: "m/\(purpose)'/\(coinType)'/\(account)'/\(Chain.internal.rawValue)/\(index)")
         return Address(privateKey.publicKey())
     }
 
-    public func privateKey() throws -> HDPrivateKey {
-        return try privateKey(index: externalIndex)
+    public func privateKey(bip: BIP) throws -> HDPrivateKey {
+        return try privateKey(bip: bip, index: externalIndex)
     }
 
-    public func publicKey() throws -> HDPublicKey {
-        return try publicKey(index: externalIndex)
+    public func publicKey(bip: BIP) throws -> HDPublicKey {
+        return try publicKey(bip: bip, index: externalIndex)
     }
 
-    public func privateKey(index: UInt32) throws -> HDPrivateKey {
+    public func privateKey(bip: BIP, index: UInt32) throws -> HDPrivateKey {
+        purpose = bip.rawValue
         let privateKey = try keychain.derivedKey(path: "m/\(purpose)'/\(coinType)'/\(account)'/\(Chain.external.rawValue)/\(index)")
         return privateKey
     }
 
-    public func publicKey(index: UInt32) throws -> HDPublicKey {
-        return try privateKey(index: index).publicKey()
+    public func publicKey(bip: BIP, index: UInt32) throws -> HDPublicKey {
+        return try privateKey(bip: bip, index: index).publicKey()
     }
     
-    public func accountPrivateKey() throws -> HDPrivateKey {
+    public func accountPrivateKey(bip: BIP) throws -> HDPrivateKey {
+        purpose = bip.rawValue
         let privateKey = try keychain.derivedKey(path: "m/\(purpose)'/\(coinType)'/\(account)'/")
         return privateKey
     }
     
-    public func accountPublicKey() throws -> HDPublicKey {
-        return try accountPrivateKey().publicKey()
+    public func accountPublicKey(bip: BIP) throws -> HDPublicKey {
+        return try accountPrivateKey(bip: bip).publicKey()
     }
 
     enum Chain : Int {

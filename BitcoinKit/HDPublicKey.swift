@@ -57,6 +57,36 @@ public class HDPublicKey {
         return Base58.encode(data + checksum)
     }
     
+    public var redeemScript: Data    {
+        var redeem = Data([0x00, 0x14])
+        redeem.append(Crypto.sha256ripemd160(raw))
+        return redeem
+    }
+    
+    public var addressBIP44: String {
+        return Address(try self).base58
+    }
+    
+    public var addressBIP49: String {
+        let prefix = Data([network.scripthash])
+        let payload = Crypto.ripemd160(Crypto.sha256(redeemScript))
+        let checksum = Crypto.sha256sha256(prefix + payload).prefix(4)
+        return Base58.encode(prefix + payload + checksum)
+    }
+    
+    public var addressBIP84: String {
+        let addrCoder = SegwitAddrCoder()
+        var address : String
+        do  {
+            address = try addrCoder.encode(hrp: network.bech32, version: 0x00, program: Crypto.ripemd160(Crypto.sha256(raw)))
+        }
+        catch {
+            address = "";
+        }
+        
+        return address
+    }
+    
     public func toAddress() -> String {
         let hash = Data([network.pubkeyhash]) + Crypto.sha256ripemd160(raw)
         return publicKeyHashToAddress(hash)
