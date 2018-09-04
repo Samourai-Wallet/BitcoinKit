@@ -14,12 +14,12 @@ public class Network {
 
     public var name: String { return "" }
     public var alias: String { return "" }
-    var pubkeyhash: UInt8 { return 0 }
-    var privatekey: UInt8 { return 0 }
-    var scripthash: UInt8 { return 0 }
-    var xpubkey: UInt32 { return 0 }
-    var xprivkey: UInt32 { return 0 }
-    var magic: UInt32 { return 0 }
+    public var pubkeyhash: UInt8 { return 0 }
+    public var privatekey: UInt8 { return 0 }
+    public var scripthash: UInt8 { return 0 }
+    public var xpubkey: UInt32 { return 0 }
+    public var xprivkey: UInt32 { return 0 }
+    public var magic: UInt32 { return 0 }
     public var bech32: String { return "" }
     public var port: UInt32 { return 0 }
     public var dnsSeeds: [String] { return [] }
